@@ -7,11 +7,12 @@
 		<groupId>com.bank</groupId>
 		<artifactId>banking-transaction-engine</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.bank</groupId>
-	<artifactId>auth-service</artifactId>
+	<artifactId>transaction-service</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
-	<name>auth-service</name>
+	<name>transaction-service</name>
 	<description />
 	<url />
 	<licenses>
@@ -34,10 +35,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
