@@ -1,0 +1,10 @@
+# Maven
+target/
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+
+# Maven Wrapper (keep only one at root later)
+.mvn/
