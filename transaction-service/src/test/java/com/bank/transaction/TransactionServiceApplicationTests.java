@@ -1,9 +1,9 @@
 package com.bank.transaction;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@Disabled("Database will be configured in Sprint 3")
 class TransactionServiceApplicationTests {
 
 	@Test
