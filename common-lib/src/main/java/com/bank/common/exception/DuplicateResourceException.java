@@ -1,5 +1,21 @@
 package com.bank.common.exception;
 
-public class DuplicateResourceException {
+import com.bank.common.enums.ErrorCode;
 
+public final class DuplicateResourceException extends BankingException {
+
+    public DuplicateResourceException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public DuplicateResourceException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
+    }
+
+    public DuplicateResourceException(
+            ErrorCode errorCode,
+            String message,
+            Throwable cause) {
+        super(errorCode, message, cause);
+    }
 }

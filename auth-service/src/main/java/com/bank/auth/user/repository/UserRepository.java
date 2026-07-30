@@ -1,0 +1,18 @@
+package com.bank.auth.user.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.bank.auth.user.entity.User;
+
+public interface UserRepository extends JpaRepository<User, String> {
+
+    Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmail(String email);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+}
