@@ -2,17 +2,20 @@ package com.bank.security.user;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.UUID;
 
 import com.bank.security.authorization.Permission;
 import com.bank.security.authorization.Role;
 
 public record SecurityUser(
 
-        Long userId,
+        UUID userId,
 
         String username,
 
         String email,
+
+        String password,
 
         Set<Role> roles,
 
@@ -22,10 +25,13 @@ public record SecurityUser(
 
         String tenantId,
 
-        boolean authenticated
+        boolean enabled,
+
+        boolean accountNonLocked,
+
+        boolean accountNonExpired,
+
+        boolean credentialsNonExpired
 
 ) implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
 }

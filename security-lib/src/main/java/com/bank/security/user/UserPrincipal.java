@@ -3,6 +3,7 @@ package com.bank.security.user;
 import java.io.Serial;
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,7 +29,7 @@ public final class UserPrincipal implements UserDetails {
         return securityUser;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return securityUser.userId();
     }
 
@@ -51,7 +52,6 @@ public final class UserPrincipal implements UserDetails {
                 securityUser.roles()
                         .stream()
                         .map(Role::name)
-                        .map(role -> "ROLE_" + role)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toSet());
 
@@ -70,7 +70,7 @@ public final class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return securityUser.password();
     }
 
     @Override
@@ -80,22 +80,21 @@ public final class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return securityUser.accountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return securityUser.accountNonLocked();
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return securityUser.credentialsNonExpired();
     }
 
     @Override
     public boolean isEnabled() {
-        return securityUser.authenticated();
+        return securityUser.enabled();
     }
-
 }

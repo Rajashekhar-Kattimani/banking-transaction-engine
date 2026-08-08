@@ -11,7 +11,6 @@ import javax.crypto.SecretKey;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 import com.bank.security.config.JwtProperties;
 import com.bank.security.constants.JwtClaims;
@@ -20,10 +19,7 @@ import com.bank.security.user.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 
-@Service
-@RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
     private final JwtProperties jwtProperties;

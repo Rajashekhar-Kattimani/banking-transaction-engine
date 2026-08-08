@@ -3,11 +3,13 @@ package com.bank.security.jwt;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import org.springframework.stereotype.Component;
+
+import com.bank.security.config.JwtProperties;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-
-import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenProvider {

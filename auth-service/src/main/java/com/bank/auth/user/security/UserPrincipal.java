@@ -1,4 +1,4 @@
-package com.bank.auth.security;
+package com.bank.auth.user.security;
 
 import java.util.Collection;
 import java.util.Set;

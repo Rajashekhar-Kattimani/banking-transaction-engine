@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,8 +27,16 @@ import lombok.experimental.SuperBuilder;
 @Table(
     name = "users",
     indexes = {
-        @Index(name = "idx_user_username", columnList = "username", unique = true),
-        @Index(name = "idx_user_email", columnList = "email", unique = true)
+        @Index(
+            name = "idx_user_username",
+            columnList = "username",
+            unique = true
+        ),
+        @Index(
+            name = "idx_user_email",
+            columnList = "email",
+            unique = true
+        )
     }
 )
 @Getter
@@ -46,38 +55,38 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean accountNonLocked = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean accountNonExpired = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean credentialsNonExpired = true;
-    
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
-    
-    @Column(nullable = false)
-    private int failedLoginAttempts;
 
-    @Column
+    @Builder.Default
+    @Column(nullable = false)
+    private int failedLoginAttempts = 0;
+
     private Instant accountLockedUntil;
 
-    @Column
     private Instant lastLoginAt;
 
-    @Column
     private Instant passwordChangedAt;
-
 }
