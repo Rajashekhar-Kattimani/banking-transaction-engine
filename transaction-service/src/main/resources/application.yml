@@ -31,6 +31,15 @@ banking:
     account-service:
       url: http://localhost:9082
 
+bank:
+  security:
+    jwt:
+      issuer: banking-transaction-engine
+      audience: banking-clients
+      secret: qVYGbrfWw6+03VwPCCLk/BJ/75etRP8Sepop+I+lMmA=
+      access-token-expiration: 900000
+      refresh-token-expiration: 604800000
+
 management:
   endpoints:
     web:

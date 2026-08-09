@@ -58,6 +58,6 @@ bank:
     jwt:
       issuer: banking-transaction-engine
       audience: banking-api
-      secret: change-this-to-a-minimum-32-character-secret-key
+      secret: qVYGbrfWw6+03VwPCCLk/BJ/75etRP8Sepop+I+lMmA=
       access-token-expiration: 900000
       refresh-token-expiration: 604800000

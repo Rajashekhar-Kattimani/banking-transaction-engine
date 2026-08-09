@@ -29,8 +29,14 @@ public class JwtServiceImpl implements JwtService {
 
         this.jwtProperties = jwtProperties;
 
-        this.signingKey = Keys.hmacShaKeyFor(
-                jwtProperties.secret().getBytes(StandardCharsets.UTF_8));
+        String secret = jwtProperties.secret();
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "Missing required configuration property 'bank.security.jwt.secret'. " +
+                    "Please set it in application.properties, application.yml or provide it via environment variables.");
+        }
+
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
