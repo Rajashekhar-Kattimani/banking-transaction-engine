@@ -85,6 +85,9 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<!-- Ensure the forked JVM used by spring-boot:run uses a Postgres-recognized timezone
+					     so the Postgres JDBC driver doesn't send a deprecated timezone like "Asia/Calcutta" -->
+					<jvmArguments>-Duser.timezone=Asia/Kolkata</jvmArguments>
 				</configuration>
 			</plugin>
 			<plugin>
