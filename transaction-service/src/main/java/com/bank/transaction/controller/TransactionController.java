@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/transactions")
+@RequestMapping("/api/v1/transactions")
 @RequiredArgsConstructor
 @Validated
 public class TransactionController {
@@ -44,7 +44,7 @@ public class TransactionController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TransactionResponse> getTransaction(
-            @PathVariable UUID id) {
+            @PathVariable("id") UUID id) {
 
         return ResponseEntity.ok(
                 transactionService.getTransaction(id));
@@ -54,7 +54,7 @@ public class TransactionController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TransactionResponse>
             getTransactionByReference(
-                    @PathVariable String reference) {
+                    @PathVariable("reference") String reference) {
 
         return ResponseEntity.ok(
                 transactionService

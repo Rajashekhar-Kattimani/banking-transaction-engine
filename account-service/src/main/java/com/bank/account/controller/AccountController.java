@@ -21,7 +21,6 @@ import com.bank.account.dto.response.AccountResponse;
 import com.bank.account.service.AccountService;
 
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,8 +33,7 @@ public class AccountController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> create(
-            @Valid @RequestBody
-            CreateAccountRequest request) {
+            @Valid @RequestBody CreateAccountRequest request) {
 
         AccountResponse response =
                 accountService.create(request);
@@ -48,7 +46,7 @@ public class AccountController {
     @GetMapping("/{accountId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> getById(
-            @PathVariable UUID accountId) {
+            @PathVariable("accountId") UUID accountId) {
 
         return ResponseEntity.ok(
                 accountService.getById(accountId));
@@ -65,9 +63,8 @@ public class AccountController {
     @PutMapping("/{accountId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> update(
-            @PathVariable UUID accountId,
-            @Valid @RequestBody
-            UpdateAccountRequest request) {
+            @PathVariable("accountId") UUID accountId,
+            @Valid @RequestBody UpdateAccountRequest request) {
 
         return ResponseEntity.ok(
                 accountService.update(
@@ -78,9 +75,40 @@ public class AccountController {
     @DeleteMapping("/{accountId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> close(
-            @PathVariable UUID accountId) {
+            @PathVariable("accountId") UUID accountId) {
 
         accountService.close(accountId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/number/{accountNumber}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AccountResponse> getByAccountNumber(
+            @PathVariable("accountNumber") String accountNumber) {
+
+        return ResponseEntity.ok(
+                accountService.getByAccountNumber(accountNumber));
+    }
+
+    @PostMapping("/number/{accountNumber}/debit")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> debitByAccountNumber(
+            @PathVariable("accountNumber") String accountNumber,
+            @RequestBody java.math.BigDecimal amount) {
+
+        accountService.debitByAccountNumber(accountNumber, amount);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/number/{accountNumber}/credit")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> creditByAccountNumber(
+            @PathVariable("accountNumber") String accountNumber,
+            @RequestBody java.math.BigDecimal amount) {
+
+        accountService.creditByAccountNumber(accountNumber, amount);
 
         return ResponseEntity.noContent().build();
     }

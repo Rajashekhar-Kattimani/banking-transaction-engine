@@ -109,6 +109,17 @@ public class AccountServiceImpl
     }
 
     @Override
+    public AccountResponse getByAccountNumber(String accountNumber) {
+
+        Account account = accountRepository
+                .findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Account not found: " + accountNumber));
+
+        return toResponse(account);
+    }
+
+    @Override
     public List<AccountResponse> getMyAccounts() {
 
         UserPrincipal principal =
@@ -152,11 +163,23 @@ public class AccountServiceImpl
                                         "Account not found: "
                                         + accountId));
 
-        if (account.getStatus()
-                == AccountStatus.CLOSED) {
+        if (account.getStatus() == AccountStatus.CLOSED) {
 
             throw new AccountOperationException(
                     "Closed account cannot be updated");
+        }
+
+        /*
+         * An account can be closed only when
+         * its balance is zero.
+         */
+        if (request.status() == AccountStatus.CLOSED
+                && account.getBalance()
+                          .compareTo(BigDecimal.ZERO) != 0) {
+
+            throw new AccountOperationException(
+                    "Account balance must be zero before "
+                    + "closing the account");
         }
 
         account.setStatus(request.status());
@@ -208,6 +231,46 @@ public class AccountServiceImpl
         }
 
         account.setStatus(AccountStatus.CLOSED);
+
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Transactional
+    public void debitByAccountNumber(String accountNumber, java.math.BigDecimal amount) {
+
+        // Ensure the caller is authenticated and owns the account
+        UserPrincipal principal = getCurrentPrincipal();
+        UUID customerId = accountSecurityService.getAuthenticatedUserId(principal);
+
+        Account account = accountRepository
+                .findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Account not found: " + accountNumber));
+
+        if (!account.getCustomerId().equals(customerId)) {
+            throw new AccountSecurityException("You are not authorized to debit this account");
+        }
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new AccountOperationException("Insufficient balance");
+        }
+
+        account.setBalance(account.getBalance().subtract(amount));
+
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Transactional
+    public void creditByAccountNumber(String accountNumber, java.math.BigDecimal amount) {
+
+        Account account = accountRepository
+                .findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Account not found: " + accountNumber));
+
+        account.setBalance(account.getBalance().add(amount));
 
         accountRepository.save(account);
     }

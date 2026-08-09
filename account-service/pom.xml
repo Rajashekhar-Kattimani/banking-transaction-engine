@@ -28,6 +28,11 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
@@ -83,15 +88,22 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
+					<mainClass>com.bank.account.AccountServiceApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-					<!-- Ensure the forked JVM used by spring-boot:run uses a Postgres-recognized timezone
-					     so the Postgres JDBC driver doesn't send a deprecated timezone like "Asia/Calcutta" -->
+					<!-- Ensure the forked JVM used by spring-boot:run uses a Postgres-recognized timezone -->
 					<jvmArguments>-Duser.timezone=Asia/Kolkata</jvmArguments>
 				</configuration>
 			</plugin>
@@ -100,6 +112,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>

@@ -1,0 +1,6 @@
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# In production, only show health details to authorized users.

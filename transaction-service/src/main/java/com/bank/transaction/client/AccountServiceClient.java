@@ -3,12 +3,18 @@ package com.bank.transaction.client;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.bank.transaction.client.dto.AccountResponse;
 import com.bank.transaction.exception.AccountOperationException;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class AccountServiceClient {
@@ -25,14 +31,37 @@ public class AccountServiceClient {
                 .build();
     }
 
+    private String getAuthorizationHeader() {
+        try {
+            RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+            if (attrs instanceof ServletRequestAttributes servletAttrs) {
+                HttpServletRequest request = servletAttrs.getRequest();
+                if (request != null) {
+                    String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+                    return auth;
+                }
+            }
+        } catch (Exception e) {
+            // ignore - no request bound
+        }
+        return null;
+    }
+
     public AccountResponse getAccount(String accountNumber) {
 
         try {
 
-            return restClient
+            RestClient.RequestHeadersSpec<?> spec = restClient
                     .get()
-                    .uri("/api/accounts/number/{accountNumber}",
-                            accountNumber)
+                    .uri("/api/v1/accounts/number/{accountNumber}",
+                            accountNumber);
+
+            String auth = getAuthorizationHeader();
+            if (auth != null) {
+                spec = spec.header(HttpHeaders.AUTHORIZATION, auth);
+            }
+
+            return spec
                     .retrieve()
                     .onStatus(
                             HttpStatusCode::isError,
@@ -58,12 +87,19 @@ public class AccountServiceClient {
 
         try {
 
-            restClient
+            RestClient.RequestHeadersSpec<?> spec = restClient
                     .post()
                     .uri(
-                            "/api/accounts/number/{accountNumber}/debit",
+                            "/api/v1/accounts/number/{accountNumber}/debit",
                             accountNumber)
-                    .body(amount)
+                    .body(amount);
+
+            String auth = getAuthorizationHeader();
+            if (auth != null) {
+                spec = spec.header(HttpHeaders.AUTHORIZATION, auth);
+            }
+
+            spec
                     .retrieve()
                     .onStatus(
                             HttpStatusCode::isError,
@@ -89,12 +125,19 @@ public class AccountServiceClient {
 
         try {
 
-            restClient
+            RestClient.RequestHeadersSpec<?> spec = restClient
                     .post()
                     .uri(
-                            "/api/accounts/number/{accountNumber}/credit",
+                            "/api/v1/accounts/number/{accountNumber}/credit",
                             accountNumber)
-                    .body(amount)
+                    .body(amount);
+
+            String auth = getAuthorizationHeader();
+            if (auth != null) {
+                spec = spec.header(HttpHeaders.AUTHORIZATION, auth);
+            }
+
+            spec
                     .retrieve()
                     .onStatus(
                             HttpStatusCode::isError,

@@ -1,0 +1,6 @@
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# In dev we expose health details for debugging. Do NOT use this in production.

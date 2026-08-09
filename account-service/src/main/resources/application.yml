@@ -45,3 +45,4 @@ management:
     web:
       exposure:
         include: health,info
+  # Actuator health details configured per-profile in application-dev.yml / application-prod.yml

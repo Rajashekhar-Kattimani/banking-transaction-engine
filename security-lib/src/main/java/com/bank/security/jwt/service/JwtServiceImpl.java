@@ -42,23 +42,23 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateAccessToken(UserPrincipal principal) {
 
-        Map<String, Object> claims = Map.of(
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
 
+        claims.put(
                 JwtClaims.ROLES,
                 principal.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)
-                        .toList(),
+                        .toList());
 
-                JwtClaims.TOKEN_TYPE,
-                "ACCESS"
+        // Include the user id if available so downstream services can identify the user
+        if (principal.getUserId() != null) {
+            claims.put(JwtClaims.USER_ID, principal.getUserId().toString());
+        }
 
-        );
+        claims.put(JwtClaims.TOKEN_TYPE, "ACCESS");
 
-        return generateToken(
-                principal,
-                claims,
-                jwtProperties.accessTokenExpiration());
+        return generateToken(principal, claims, jwtProperties.accessTokenExpiration());
     }
 
     @Override

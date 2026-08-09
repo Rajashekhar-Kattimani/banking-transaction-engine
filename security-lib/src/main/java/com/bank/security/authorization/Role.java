@@ -18,6 +18,10 @@ public enum Role {
 
     CUSTOMER,
 
-    SYSTEM
+    SYSTEM,
+
+    ROLE_USER,
+
+    ROLE_ADMIN
 
 }

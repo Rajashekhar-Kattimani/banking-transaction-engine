@@ -24,6 +24,8 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "roles")
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
 public class Role extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 50)
@@ -32,7 +34,7 @@ public class Role extends BaseEntity {
     @Column(length = 255)
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "role_permissions",
         joinColumns = @JoinColumn(name = "role_id"),

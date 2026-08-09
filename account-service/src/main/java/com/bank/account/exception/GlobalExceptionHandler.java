@@ -8,11 +8,15 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bank.common.dto.response.ErrorResponse;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.bank.account")
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
@@ -79,6 +83,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(
             Exception ex) {
+
+        // Log the unexpected exception for diagnostics
+        logger.error("Unhandled exception caught by GlobalExceptionHandler", ex);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -2,6 +2,7 @@ package com.bank.account.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 import com.bank.account.dto.request.CreateAccountRequest;
 import com.bank.account.dto.request.UpdateAccountRequest;
@@ -23,4 +24,11 @@ public interface AccountService {
 
     void close(
             UUID accountId);
+
+    // New operations used by transaction-service
+    AccountResponse getByAccountNumber(String accountNumber);
+
+    void debitByAccountNumber(String accountNumber, BigDecimal amount);
+
+    void creditByAccountNumber(String accountNumber, BigDecimal amount);
 }
