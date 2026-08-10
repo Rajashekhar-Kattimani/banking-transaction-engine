@@ -1,6 +1,7 @@
 package com.bank.transaction.client;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -47,14 +48,38 @@ public class AccountServiceClient {
         return null;
     }
 
-    public AccountResponse getAccount(String accountNumber) {
+    private UUID tryParseUUID(String accountIdentifier) {
+        try {
+            return UUID.fromString(accountIdentifier);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private boolean isValidUUID(String accountIdentifier) {
+        return tryParseUUID(accountIdentifier) != null;
+    }
+
+    public AccountResponse getAccount(String accountIdentifier) {
 
         try {
 
-            RestClient.RequestHeadersSpec<?> spec = restClient
-                    .get()
-                    .uri("/api/v1/accounts/number/{accountNumber}",
-                            accountNumber);
+            RestClient.RequestHeadersSpec<?> spec;
+            
+            // Check if the identifier is a UUID
+            if (isValidUUID(accountIdentifier)) {
+                // Use UUID-based endpoint
+                spec = restClient
+                        .get()
+                        .uri("/api/v1/accounts/{accountId}",
+                                accountIdentifier);
+            } else {
+                // Use account number endpoint
+                spec = restClient
+                        .get()
+                        .uri("/api/v1/accounts/number/{accountNumber}",
+                                accountIdentifier);
+            }
 
             String auth = getAuthorizationHeader();
             if (auth != null) {
@@ -68,7 +93,7 @@ public class AccountServiceClient {
                             (request, response) -> {
                                 throw new AccountOperationException(
                                         "Unable to fetch account: "
-                                                + accountNumber);
+                                                + accountIdentifier);
                             })
                     .body(AccountResponse.class);
 
@@ -77,22 +102,36 @@ public class AccountServiceClient {
         } catch (Exception exception) {
             throw new AccountOperationException(
                     "Account Service unavailable for account: "
-                            + accountNumber);
+                            + accountIdentifier);
         }
     }
 
     public void debit(
-            String accountNumber,
+            String accountIdentifier,
             BigDecimal amount) {
 
         try {
 
-            RestClient.RequestHeadersSpec<?> spec = restClient
-                    .post()
-                    .uri(
-                            "/api/v1/accounts/number/{accountNumber}/debit",
-                            accountNumber)
-                    .body(amount);
+            RestClient.RequestHeadersSpec<?> spec;
+            
+            // Check if the identifier is a UUID
+            if (isValidUUID(accountIdentifier)) {
+                // Use UUID-based endpoint
+                spec = restClient
+                        .post()
+                        .uri(
+                                "/api/v1/accounts/{accountId}/debit",
+                                accountIdentifier)
+                        .body(amount);
+            } else {
+                // Use account number endpoint
+                spec = restClient
+                        .post()
+                        .uri(
+                                "/api/v1/accounts/number/{accountNumber}/debit",
+                                accountIdentifier)
+                        .body(amount);
+            }
 
             String auth = getAuthorizationHeader();
             if (auth != null) {
@@ -106,7 +145,7 @@ public class AccountServiceClient {
                             (request, response) -> {
                                 throw new AccountOperationException(
                                         "Unable to debit account: "
-                                                + accountNumber);
+                                                + accountIdentifier);
                             })
                     .toBodilessEntity();
 
@@ -115,22 +154,36 @@ public class AccountServiceClient {
         } catch (Exception exception) {
             throw new AccountOperationException(
                     "Account debit failed for account: "
-                            + accountNumber);
+                            + accountIdentifier);
         }
     }
 
     public void credit(
-            String accountNumber,
+            String accountIdentifier,
             BigDecimal amount) {
 
         try {
 
-            RestClient.RequestHeadersSpec<?> spec = restClient
-                    .post()
-                    .uri(
-                            "/api/v1/accounts/number/{accountNumber}/credit",
-                            accountNumber)
-                    .body(amount);
+            RestClient.RequestHeadersSpec<?> spec;
+            
+            // Check if the identifier is a UUID
+            if (isValidUUID(accountIdentifier)) {
+                // Use UUID-based endpoint
+                spec = restClient
+                        .post()
+                        .uri(
+                                "/api/v1/accounts/{accountId}/credit",
+                                accountIdentifier)
+                        .body(amount);
+            } else {
+                // Use account number endpoint
+                spec = restClient
+                        .post()
+                        .uri(
+                                "/api/v1/accounts/number/{accountNumber}/credit",
+                                accountIdentifier)
+                        .body(amount);
+            }
 
             String auth = getAuthorizationHeader();
             if (auth != null) {
@@ -144,7 +197,7 @@ public class AccountServiceClient {
                             (request, response) -> {
                                 throw new AccountOperationException(
                                         "Unable to credit account: "
-                                                + accountNumber);
+                                                + accountIdentifier);
                             })
                     .toBodilessEntity();
 
@@ -153,7 +206,7 @@ public class AccountServiceClient {
         } catch (Exception exception) {
             throw new AccountOperationException(
                     "Account credit failed for account: "
-                            + accountNumber);
+                            + accountIdentifier);
         }
     }
 }

@@ -82,6 +82,28 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{accountId}/debit")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> debitById(
+            @PathVariable("accountId") UUID accountId,
+            @RequestBody java.math.BigDecimal amount) {
+
+        accountService.debitByAccountId(accountId, amount);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{accountId}/credit")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> creditById(
+            @PathVariable("accountId") UUID accountId,
+            @RequestBody java.math.BigDecimal amount) {
+
+        accountService.creditByAccountId(accountId, amount);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/number/{accountNumber}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AccountResponse> getByAccountNumber(

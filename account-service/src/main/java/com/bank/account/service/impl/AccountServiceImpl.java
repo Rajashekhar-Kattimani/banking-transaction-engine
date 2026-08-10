@@ -275,6 +275,55 @@ public class AccountServiceImpl
         accountRepository.save(account);
     }
 
+    @Override
+    @Transactional
+    public void debitByAccountId(UUID accountId, BigDecimal amount) {
+
+        // Ensure the caller is authenticated
+        UserPrincipal principal = getCurrentPrincipal();
+        UUID customerId = accountSecurityService.getAuthenticatedUserId(principal);
+
+        Account account = accountRepository
+                .findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Account not found: " + accountId));
+
+        if (!account.getCustomerId().equals(customerId)) {
+            throw new AccountSecurityException("You are not authorized to debit this account");
+        }
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new AccountOperationException("Insufficient balance");
+        }
+
+        account.setBalance(account.getBalance().subtract(amount));
+
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Transactional
+    public void creditByAccountId(UUID accountId, BigDecimal amount) {
+
+        // Ensure the caller is authenticated
+        UserPrincipal principal = getCurrentPrincipal();
+        UUID customerId = accountSecurityService.getAuthenticatedUserId(principal);
+
+        Account account = accountRepository
+                .findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Account not found: " + accountId));
+
+        if (!account.getCustomerId().equals(customerId)) {
+            throw new AccountSecurityException("You are not authorized to credit this account");
+        }
+
+        account.setBalance(account.getBalance().add(amount));
+
+        accountRepository.save(account);
+    }
+
+
     private UserPrincipal getCurrentPrincipal() {
 
         if (SecurityContextHolder

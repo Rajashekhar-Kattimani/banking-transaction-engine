@@ -31,4 +31,9 @@ public interface AccountService {
     void debitByAccountNumber(String accountNumber, BigDecimal amount);
 
     void creditByAccountNumber(String accountNumber, BigDecimal amount);
+
+    // UUID-based operations (preferred method for inter-service communication)
+    void debitByAccountId(UUID accountId, BigDecimal amount);
+
+    void creditByAccountId(UUID accountId, BigDecimal amount);
 }
