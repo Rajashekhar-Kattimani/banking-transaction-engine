@@ -1,12 +1,48 @@
+server:
+  port: 9082
+
 spring:
   application:
     name: account-service
 
-server:
-  port: 9082
+  datasource:
+    url: jdbc:postgresql://localhost:5432/account_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+      cache-null-values: false
+
+bank:
+  security:
+    jwt:
+      issuer: banking-transaction-engine
+      audience: banking-clients
+      secret: qVYGbrfWw6+03VwPCCLk/BJ/75etRP8Sepop+I+lMmA=
+      access-token-expiration: 900000
+      refresh-token-expiration: 604800000
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info
+  # Actuator health details configured per-profile in application-dev.yml / application-prod.yml

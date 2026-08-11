@@ -1,5 +1,21 @@
 package com.bank.common.exception;
 
-public class ResourceNotFoundException {
+import com.bank.common.enums.ErrorCode;
 
+public final class ResourceNotFoundException extends BankingException {
+
+    public ResourceNotFoundException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public ResourceNotFoundException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
+    }
+
+    public ResourceNotFoundException(
+            ErrorCode errorCode,
+            String message,
+            Throwable cause) {
+        super(errorCode, message, cause);
+    }
 }

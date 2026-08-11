@@ -2,36 +2,48 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>com.bank</groupId>
 	<artifactId>banking-transaction-engine</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
 	<name>Banking Transaction Engine</name>
 	<description>Enterprise Banking Transaction Processing System</description>
-
 	<modules>
 		<module>common-lib</module>
+		<module>persistence-lib</module>
+		<module>security-lib</module>
+		<module>messaging-lib</module>
+		<module>observability-lib</module>
+		<module>testing-lib</module>
 		<module>api-gateway</module>
 		<module>auth-service</module>
 		<module>account-service</module>
 		<module>transaction-service</module>
+		<!--		<module>notification-service</module>-->
+		<!--		<module>audit-service</module>-->
+		<!--		<module>customer-service</module>-->
+		<module>cache-lib</module>
 	</modules>
-
 	<properties>
 		<java.version>21</java.version>
 		<spring.boot.version>4.1.0</spring.boot.version>
 		<spring-cloud.version>2025.1.2</spring-cloud.version>
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<lombok.version>1.18.46</lombok.version>
+		<testcontainers.version>1.21.3</testcontainers.version>
+		<jjwt.version>0.13.0</jjwt.version>
 	</properties>
-
 	<dependencyManagement>
 		<dependencies>
-
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>${testcontainers.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -46,24 +58,37 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 	<build>
 		<pluginManagement>
 			<plugins>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.14.0</version>
+					<version>3.15.0</version>
 					<configuration>
 						<release>${java.version}</release>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>${lombok.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
-
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring.boot.version}</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
 </project>
