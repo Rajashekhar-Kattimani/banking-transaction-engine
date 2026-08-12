@@ -1,21 +1,22 @@
 package com.bank.transaction.service.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bank.transaction.client.AccountServiceClient;
-import com.bank.transaction.client.dto.AccountResponse;
+import com.bank.messaging.constant.KafkaTopics;
+import com.bank.messaging.event.TransferInitiatedEvent;
 import com.bank.transaction.dto.request.TransferRequest;
 import com.bank.transaction.dto.response.TransactionResponse;
 import com.bank.transaction.entity.Transaction;
 import com.bank.transaction.entity.TransactionStatus;
 import com.bank.transaction.entity.TransactionType;
-import com.bank.transaction.exception.AccountOperationException;
 import com.bank.transaction.exception.InvalidTransferException;
 import com.bank.transaction.exception.TransactionNotFoundException;
+import com.bank.transaction.outbox.OutboxService;
 import com.bank.transaction.repository.TransactionRepository;
 import com.bank.transaction.service.TransactionService;
 
@@ -25,136 +26,107 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TransactionServiceImpl
-        implements TransactionService {
+public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
 
-    private final AccountServiceClient accountServiceClient;
+//    private final KafkaEventPublisher kafkaEventPublisher;
+    private final OutboxService outboxService;
 
     @Override
     @Transactional
-    public TransactionResponse transfer(
-            TransferRequest request) {
+    public TransactionResponse transfer(TransferRequest request) {
 
         log.info(
                 "Fund transfer requested: fromAccount={}, toAccount={}, amount={}",
                 request.fromAccount(),
                 request.toAccount(),
-                request.amount());
+                request.amount()
+        );
 
         validateTransfer(request);
 
-        String transactionReference =
-                generateTransactionReference();
+        String transactionReference = generateTransactionReference();
 
-        Transaction transaction =
-                Transaction.builder()
-                        .transactionReference(
-                                transactionReference)
-                        .fromAccount(
-                                request.fromAccount())
-                        .toAccount(
-                                request.toAccount())
-                        .amount(request.amount())
-                        .transactionType(
-                                TransactionType.FUND_TRANSFER)
-                        .status(
-                                TransactionStatus.INITIATED)
-                        .build();
+        Transaction transaction = Transaction.builder()
+                .transactionReference(transactionReference)
+                .fromAccount(request.fromAccount())
+                .toAccount(request.toAccount())
+                .amount(request.amount())
+                .transactionType(TransactionType.FUND_TRANSFER)
+                .status(TransactionStatus.INITIATED)
+                .build();
 
-        transaction =
-                transactionRepository.save(transaction);
+        transaction = transactionRepository.save(transaction);
 
-        try {
+        log.info(
+                "Transaction created: transactionId={}, transactionReference={}",
+                transaction.getId(),
+                transactionReference
+        );
 
-            AccountResponse sourceAccount =
-                    accountServiceClient.getAccount(
-                            request.fromAccount());
+        /*
+         * The transaction-service does NOT debit or credit accounts directly.
+         *
+         * Account-service owns the account balance operations.
+         *
+         * The transfer.initiated event starts the Saga.
+         */
+        TransferInitiatedEvent initiatedEvent =
+                new TransferInitiatedEvent(
+                        UUID.randomUUID(),                 // eventId
+                        transaction.getId(),               // transactionId
+                        transaction.getTransactionReference(),
+                        transaction.getFromAccount(),
+                        transaction.getToAccount(),
+                        transaction.getAmount(),
+                        Instant.now()
+                );
 
-            AccountResponse destinationAccount =
-                    accountServiceClient.getAccount(
-                            request.toAccount());
+        log.info(
+                "Saving transfer.initiated to outbox: transactionId={}, transactionReference={}",
+                transaction.getId(),
+                transactionReference
+        );
 
-            validateAccounts(
-                    sourceAccount,
-                    destinationAccount,
-                    request);
+        outboxService.save(
+                transaction.getId(),
+                "TRANSACTION",
+                "TransferInitiatedEvent",
+                KafkaTopics.TRANSFER_INITIATED,
+                transaction.getId().toString(),
+                initiatedEvent
+        );
 
-            transaction.setStatus(
-                    TransactionStatus.PROCESSING);
+        log.info(
+                "transfer.initiated saved to outbox: transactionId={}",
+                transaction.getId()
+        );
 
-            transactionRepository.save(transaction);
+        /*
+         * The transaction is now waiting for the Saga to complete.
+         *
+         * Do NOT set SUCCESS here.
+         *
+         * The final status will be updated when
+         * transfer.completed / transfer.failed is received.
+         */
+        transaction.setStatus(TransactionStatus.PROCESSING);
 
-            log.info(
-                    "Debiting source account: transactionReference={}, account={}, amount={}",
-                    transactionReference,
-                    request.fromAccount(),
-                    request.amount());
+        transactionRepository.save(transaction);
 
-            accountServiceClient.debit(
-                    request.fromAccount(),
-                    request.amount());
-
-            log.info(
-                    "Source account debited: transactionReference={}",
-                    transactionReference);
-
-            log.info(
-                    "Crediting destination account: transactionReference={}, account={}, amount={}",
-                    transactionReference,
-                    request.toAccount(),
-                    request.amount());
-
-            accountServiceClient.credit(
-                    request.toAccount(),
-                    request.amount());
-
-            log.info(
-                    "Destination account credited: transactionReference={}",
-                    transactionReference);
-
-            transaction.setStatus(
-                    TransactionStatus.SUCCESS);
-
-            transactionRepository.save(transaction);
-
-            log.info(
-                    "Fund transfer successful: transactionReference={}",
-                    transactionReference);
-
-            return toResponse(transaction);
-
-        } catch (AccountOperationException exception) {
-
-            log.error(
-                    "Fund transfer failed: transactionReference={}",
-                    transactionReference,
-                    exception);
-
-            transaction.setStatus(
-                    TransactionStatus.FAILED);
-
-            transaction.setFailureReason(
-                    exception.getMessage());
-
-            transactionRepository.save(transaction);
-
-            throw exception;
-        }
+        return toResponse(transaction);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public TransactionResponse getTransaction(
-            UUID transactionId) {
+    public TransactionResponse getTransaction(UUID transactionId) {
 
         Transaction transaction =
                 transactionRepository.findById(transactionId)
                         .orElseThrow(() ->
                                 new TransactionNotFoundException(
-                                        "Transaction not found: "
-                                                + transactionId));
+                                        "Transaction not found: " + transactionId));
 
         return toResponse(transaction);
     }
@@ -166,8 +138,7 @@ public class TransactionServiceImpl
 
         Transaction transaction =
                 transactionRepository
-                        .findByTransactionReference(
-                                transactionReference)
+                        .findByTransactionReference(transactionReference)
                         .orElseThrow(() ->
                                 new TransactionNotFoundException(
                                         "Transaction not found: "
@@ -176,72 +147,34 @@ public class TransactionServiceImpl
         return toResponse(transaction);
     }
 
-    private void validateTransfer(
-            TransferRequest request) {
+    private void validateTransfer(TransferRequest request) {
+
+        if (request.fromAccount() == null
+                || request.toAccount() == null) {
+
+            throw new InvalidTransferException(
+                    "Source and destination accounts are required");
+        }
 
         if (request.fromAccount()
                 .equals(request.toAccount())) {
 
             throw new InvalidTransferException(
-                    "Source and destination accounts "
-                            + "cannot be the same");
+                    "Source and destination accounts cannot be the same");
         }
 
-        if (request.amount()
-                .compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.amount() == null
+                || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new InvalidTransferException(
                     "Transfer amount must be greater than zero");
         }
     }
 
-    private void validateAccounts(
-            AccountResponse sourceAccount,
-            AccountResponse destinationAccount,
-            TransferRequest request) {
-
-        if (sourceAccount == null) {
-
-            throw new InvalidTransferException(
-                    "Source account not found: "
-                            + request.fromAccount());
-        }
-
-        if (destinationAccount == null) {
-
-            throw new InvalidTransferException(
-                    "Destination account not found: "
-                            + request.toAccount());
-        }
-
-        if (sourceAccount.balance()
-                .compareTo(request.amount()) < 0) {
-
-            throw new InvalidTransferException(
-                    "Insufficient balance in source account");
-        }
-
-        if (sourceAccount.status() != null
-                && !sourceAccount.status()
-                        .equalsIgnoreCase("ACTIVE")) {
-
-            throw new InvalidTransferException(
-                    "Source account is not active");
-        }
-
-        if (destinationAccount.status() != null
-                && !destinationAccount.status()
-                        .equalsIgnoreCase("ACTIVE")) {
-
-            throw new InvalidTransferException(
-                    "Destination account is not active");
-        }
-    }
-
     private String generateTransactionReference() {
 
-        return "TXN-" +
-                UUID.randomUUID()
+        return "TXN-"
+                + UUID.randomUUID()
                         .toString()
                         .replace("-", "")
                         .toUpperCase();
@@ -260,6 +193,7 @@ public class TransactionServiceImpl
                 transaction.getStatus(),
                 transaction.getFailureReason(),
                 transaction.getCreatedAt(),
-                transaction.getUpdatedAt());
+                transaction.getUpdatedAt()
+        );
     }
 }

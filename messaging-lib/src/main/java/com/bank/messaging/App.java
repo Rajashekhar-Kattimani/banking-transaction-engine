@@ -1,4 +1,4 @@
-package org.bank.messaging;
+package com.bank.messaging;
 
 /**
  * Hello world!

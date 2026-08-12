@@ -40,6 +40,10 @@ bank:
       access-token-expiration: 900000
       refresh-token-expiration: 604800000
 
+  messaging:
+    kafka:
+      bootstrap-servers: localhost:9092
+
 management:
   endpoints:
     web:

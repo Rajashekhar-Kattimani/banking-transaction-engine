@@ -17,6 +17,7 @@ import com.bank.transaction.dto.request.TransferRequest;
 import com.bank.transaction.dto.response.TransactionResponse;
 import com.bank.transaction.service.TransactionService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/transactions")
 @RequiredArgsConstructor
 @Validated
+@SecurityRequirement(name = "bearerAuth")
 public class TransactionController {
 
     private final TransactionService transactionService;

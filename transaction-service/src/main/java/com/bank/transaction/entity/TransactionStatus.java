@@ -5,6 +5,8 @@ public enum TransactionStatus {
     INITIATED,
 
     PROCESSING,
+    
+    COMPLETED,
 
     SUCCESS,
 
