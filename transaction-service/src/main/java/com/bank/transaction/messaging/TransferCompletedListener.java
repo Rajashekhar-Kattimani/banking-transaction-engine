@@ -110,12 +110,12 @@ public class TransferCompletedListener {
             return;
         }
 
-        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setStatus(TransactionStatus.SUCCESS);
 
         transactionRepository.save(transaction);
 
         log.info(
-                "Transaction marked as COMPLETED: "
+                "Transaction marked as SUCCESS: "
                         + "transactionId={}, transactionReference={}",
                 transaction.getId(),
                 transaction.getTransactionReference()

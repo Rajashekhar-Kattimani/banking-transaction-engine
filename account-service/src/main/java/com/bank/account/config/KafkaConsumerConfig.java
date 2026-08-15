@@ -18,11 +18,10 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 public class KafkaConsumerConfig {
 
 	private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-
 	private static final String GROUP_ID = "account-service";
 
 	@Bean
-	ConsumerFactory<String, Object> consumerFactory() {
+	public ConsumerFactory<String, Object> consumerFactory() {
 
 		Map<String, Object> properties = new HashMap<>();
 
@@ -34,29 +33,21 @@ public class KafkaConsumerConfig {
 
 		properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
-		JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>();
-
 		/*
-		 * Trust only the event package from messaging-lib.
+		 * JsonDeserializer reads the Java class from the __TypeId__ Kafka header added
+		 * by JsonSerializer.
 		 */
+		JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>(Object.class);
+
 		jsonDeserializer.addTrustedPackages("com.bank.messaging.event");
 
-		/*
-		 * The producer JsonSerializer adds the Java type information in Kafka headers.
-		 *
-		 * Therefore the consumer can deserialize:
-		 *
-		 * TransferInitiatedEvent TransferDebitedEvent TransferFailedEvent
-		 *
-		 * correctly.
-		 */
 		jsonDeserializer.setUseTypeHeaders(true);
 
 		return new DefaultKafkaConsumerFactory<>(properties, new StringDeserializer(), jsonDeserializer);
 	}
 
 	@Bean(name = "kafkaListenerContainerFactory")
-	ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
+	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
 			ConsumerFactory<String, Object> consumerFactory) {
 
 		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
