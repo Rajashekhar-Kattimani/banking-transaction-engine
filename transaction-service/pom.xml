@@ -14,7 +14,20 @@
 	<version>0.1.0-SNAPSHOT</version>
 	<name>transaction-service</name>
 	<dependencies>
-
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.bank</groupId>
+			<artifactId>messaging-lib</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -92,8 +105,10 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-					<!-- Ensure the forked JVM used by spring-boot:run uses a Postgres-recognized timezone
-					     so the Postgres JDBC driver doesn't send a deprecated timezone like "Asia/Calcutta" -->
+					<!-- Ensure the forked JVM used by spring-boot:run uses a
+					Postgres-recognized timezone
+					     so the Postgres JDBC driver doesn't send a deprecated timezone like
+					"Asia/Calcutta" -->
 					<jvmArguments>-Duser.timezone=Asia/Kolkata</jvmArguments>
 				</configuration>
 			</plugin>
